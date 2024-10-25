@@ -1,0 +1,8 @@
+# Base image olarak nginx kullanın
+FROM nginx:alpine
+
+# HTML dosyanızı konteynıra kopyalayın
+COPY index.html /usr/share/nginx/html/index.html
+
+# Nginx'i çalıştırın
+CMD ["nginx", "-g", "daemon off;"]

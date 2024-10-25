@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: html-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: html-app
+  template:
+    metadata:
+      labels:
+        app: html-app
+    spec:
+      containers:
+      - name: html-app
+        image: recepbaykara/html-app:latest  # Docker Hub'daki görüntü adınızı buraya ekleyin
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "256Mi"  # Minimum bellek talebi
+            cpu: "250m"      # Minimum CPU talebi
+          limits:
+            memory: "512Mi"  # Maksimum bellek sınırı
+            cpu: "500m"      # Maksimum CPU sınırı
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: html-app
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+  selector:
+    app: html-app

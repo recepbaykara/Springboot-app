@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Students</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Student Management - View Students</h1>
+
+<h2>All Students</h2>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date of Birth</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="student : ${students}">
+            <td th:text="${student.id}"></td>
+            <td>
+                <span class="display-name" th:text="${student.name}"></span>
+                <input type="text" class="edit-name hidden" th:value="${student.name}" required>
+            </td>
+            <td>
+                <span class="display-email" th:text="${student.email}"></span>
+                <input type="email" class="edit-email hidden" th:value="${student.email}" required>
+            </td>
+            <td>
+                <span class="display-dob" th:text="${student.dob}"></span>
+                <input type="date" class="edit-dob hidden" th:value="${student.dob}" required>
+            </td>
+            <td>
+                <form th:action="@{/students/{id}(id=${student.id})}" method="post" class="delete-form">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button type="submit">Delete</button>
+                </form>
+                <button onclick="toggleEditMode(this)">Edit</button>
+                <button class="hidden" onclick="saveChanges(this)">Save</button>
+                <button class="hidden" onclick="cancelEdit(this)">Cancel</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    function toggleEditMode(button) {
+        const row = button.closest('tr');
+        const displayFields = row.querySelectorAll('.display-name, .display-email, .display-dob');
+        const editFields = row.querySelectorAll('.edit-name, .edit-email, .edit-dob');
+        
+        displayFields.forEach(field => field.classList.toggle('hidden'));
+        editFields.forEach(field => field.classList.toggle('hidden'));
+        
+        button.classList.toggle('hidden');
+        row.querySelector('button:nth-of-type(2)').classList.toggle('hidden'); // Save button
+        row.querySelector('button:nth-of-type(3)').classList.toggle('hidden'); // Cancel button
+    }
+
+    function saveChanges(button) {
+        const row = button.closest('tr');
+        const studentId = row.querySelector('td:first-child').innerText;
+        const name = row.querySelector('.edit-name').value;
+        const email = row.querySelector('.edit-email').value;
+        const dob = row.querySelector('.edit-dob').value;
+    
+        fetch(`/students/${studentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                dob: dob 
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            row.querySelector('.display-name').innerText = name;
+            row.querySelector('.display-email').innerText = email;
+            row.querySelector('.display-dob').innerText = dob;
+            
+            toggleEditMode(button);
+
+            location.reload();
+
+            
+        })
+    }    
+
+    function cancelEdit(button) {
+        const row = button.closest('tr');
+        toggleEditMode(button);
+    
+        row.querySelector('.edit-name').value = row.querySelector('.display-name').innerText;
+        row.querySelector('.edit-email').value = row.querySelector('.display-email').innerText;
+        row.querySelector('.edit-dob').value = row.querySelector('.display-dob').innerText;
+        
+        location.reload();
+    }
+    
+    
+</script>
+
+</body>
+</html>
